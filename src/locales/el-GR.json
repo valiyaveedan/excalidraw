@@ -93,7 +93,7 @@
     "distributeHorizontally": "Οριζόντια κατανομή",
     "distributeVertically": "Κατακόρυφη κατανομή",
     "viewMode": "Λειτουργία προβολής",
-    "toggleExportColorScheme": ""
+    "toggleExportColorScheme": "Εναλλαγή εξαγωγής θέματος χρωμάτων"
   },
   "buttons": {
     "clearReset": "Επαναφορά του καμβά",
@@ -142,6 +142,7 @@
     "confirmAddLibrary": "Αυτό θα προσθέσει {{numShapes}} σχήμα(τα) στη βιβλιοθήκη σας. Είστε σίγουροι;",
     "imageDoesNotContainScene": "Η εισαγωγή εικόνων δεν υποστηρίζεται αυτή τη στιγμή.\n\nΜήπως θέλετε να εισαγάγετε μια σκηνή; Αυτή η εικόνα δεν φαίνεται να περιέχει δεδομένα σκηνής. Έχετε ενεργοποιήσει αυτό κατά την εξαγωγή;",
     "cannotRestoreFromImage": "Η σκηνή δεν ήταν δυνατό να αποκατασταθεί από αυτό το αρχείο εικόνας",
+    "invalidSceneUrl": "",
     "resetLibrary": "Αυτό θα καθαρίσει τη βιβλιοθήκη σας. Είστε σίγουροι;"
   },
   "toolBar": {
@@ -245,8 +246,10 @@
   "toast": {
     "copyStyles": "Αντιγράφηκαν στυλ.",
     "copyToClipboard": "Αντιγράφηκε στο πρόχειρο.",
-    "copyToClipboardAsPng": "Αντιγράφτηκε στο πρόχειρο ως PNG.",
+    "copyToClipboardAsPng": "Αντιγράφηκε {{exportSelection}} στο πρόχειρο ως PNG\n({{exportColorScheme}})",
     "fileSaved": "Το αρχείο αποθηκεύτηκε.",
-    "fileSavedToFilename": "Αποθηκεύτηκε στο {filename}"
+    "fileSavedToFilename": "Αποθηκεύτηκε στο {filename}",
+    "canvas": "καμβάς",
+    "selection": "επιλογή"
   }
 }

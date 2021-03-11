@@ -142,6 +142,7 @@
     "confirmAddLibrary": "{{numShapes}} 個の図形をライブラリに追加します。よろしいですか？",
     "imageDoesNotContainScene": "現在、画像のインポートはサポートされていません。\n\nシーンをインポートしようとしましたか？この画像にはシーンデータが含まれていないようです。エクスポート中に有効にしていましたか？",
     "cannotRestoreFromImage": "このイメージファイルからシーンを復元できませんでした",
+    "invalidSceneUrl": "",
     "resetLibrary": "ライブラリを消去します。本当によろしいですか？"
   },
   "toolBar": {
@@ -245,8 +246,10 @@
   "toast": {
     "copyStyles": "スタイルをコピー",
     "copyToClipboard": "クリップボードにコピー",
-    "copyToClipboardAsPng": "PNG形式でクリップボードにコピー",
+    "copyToClipboardAsPng": "",
     "fileSaved": "ファイルを保存しました",
-    "fileSavedToFilename": "{filename} に保存しました"
+    "fileSavedToFilename": "{filename} に保存しました",
+    "canvas": "",
+    "selection": ""
   }
 }

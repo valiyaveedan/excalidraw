@@ -17,7 +17,7 @@ export const actionCopy = register({
     };
   },
   contextItemLabel: "labels.copy",
-  keyTest: (event) => event[KEYS.CTRL_OR_CMD] && event.code === CODES.C,
+  // Don't assign keyTest since its handled via copy event
 });
 
 export const actionCut = register({
@@ -94,7 +94,14 @@ export const actionCopyAsPng = register({
       return {
         appState: {
           ...appState,
-          toastMessage: t("toast.copyToClipboardAsPng"),
+          toastMessage: t("toast.copyToClipboardAsPng", {
+            exportSelection: selectedElements.length
+              ? t("toast.selection")
+              : t("toast.canvas"),
+            exportColorScheme: appState.exportWithDarkMode
+              ? t("buttons.darkMode")
+              : t("buttons.lightMode"),
+          }),
         },
         commitToHistory: false,
       };

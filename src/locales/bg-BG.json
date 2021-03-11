@@ -142,6 +142,7 @@
     "confirmAddLibrary": "Ще се добавят {{numShapes}} фигура(и) във вашата библиотека. Сигурни ли сте?",
     "imageDoesNotContainScene": "Импортирането на картинки не се поддържва в момента.\n\nИскате да импортнете сцена? Тази картинка не съдържа данни от сцена. Разрешили ли сте последното при експортирането?",
     "cannotRestoreFromImage": "Не може да бъде възстановена сцена от този файл",
+    "invalidSceneUrl": "",
     "resetLibrary": ""
   },
   "toolBar": {
@@ -245,8 +246,10 @@
   "toast": {
     "copyStyles": "Копирани стилове.",
     "copyToClipboard": "Копирано в клипборда.",
-    "copyToClipboardAsPng": "Копирано в клипборда като PNG.",
+    "copyToClipboardAsPng": "",
     "fileSaved": "",
-    "fileSavedToFilename": ""
+    "fileSavedToFilename": "",
+    "canvas": "",
+    "selection": ""
   }
 }

@@ -172,6 +172,7 @@ import {
   ResolvablePromise,
   resolvablePromise,
   sceneCoordsToViewportCoords,
+  setCursor,
   setCursorForShape,
   tupleToCoors,
   viewportCoordsToSceneCoords,
@@ -416,8 +417,6 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       zenModeEnabled,
       width: canvasDOMWidth,
       height: canvasDOMHeight,
-      offsetTop,
-      offsetLeft,
       viewModeEnabled,
     } = this.state;
 
@@ -435,8 +434,6 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         style={{
           width: canvasDOMWidth,
           height: canvasDOMHeight,
-          top: offsetTop,
-          left: offsetLeft,
         }}
       >
         <LayerUI
@@ -556,18 +553,22 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         }
 
         this.setState(
-          (state) => ({
-            ...actionResult.appState,
-            editingElement:
-              editingElement || actionResult.appState?.editingElement || null,
-            width: state.width,
-            height: state.height,
-            offsetTop: state.offsetTop,
-            offsetLeft: state.offsetLeft,
-            viewModeEnabled,
-            zenModeEnabled,
-            gridSize,
-          }),
+          (state) => {
+            // using Object.assign instead of spread to fool TS 4.2.2+ into
+            // regarding the resulting type as not containing undefined
+            // (which the following expression will never contain)
+            return Object.assign(actionResult.appState || {}, {
+              editingElement:
+                editingElement || actionResult.appState?.editingElement || null,
+              width: state.width,
+              height: state.height,
+              offsetTop: state.offsetTop,
+              offsetLeft: state.offsetLeft,
+              viewModeEnabled,
+              zenModeEnabled,
+              gridSize,
+            });
+          },
           () => {
             if (actionResult.syncHistory) {
               history.setCurrentState(
@@ -1028,7 +1029,13 @@ class App extends React.Component<ExcalidrawProps, AppState> {
   }
 
   private onScroll = debounce(() => {
-    this.setState({ ...this.getCanvasOffsets() });
+    const { offsetTop, offsetLeft } = this.getCanvasOffsets();
+    this.setState((state) => {
+      if (state.offsetLeft === offsetLeft && state.offsetTop === offsetTop) {
+        return null;
+      }
+      return { offsetTop, offsetLeft };
+    });
   }, SCROLL_TIMEOUT);
 
   // Copy/paste
@@ -1042,6 +1049,13 @@ class App extends React.Component<ExcalidrawProps, AppState> {
   });
 
   private onCopy = withBatchedUpdates((event: ClipboardEvent) => {
+    const activeSelection = document.getSelection();
+    if (
+      activeSelection?.anchorNode &&
+      !this.excalidrawContainerRef.current!.contains(activeSelection.anchorNode)
+    ) {
+      return;
+    }
     if (isWritableElement(event.target)) {
       return;
     }
@@ -1461,16 +1475,16 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     }
     if (event.key === KEYS.SPACE && gesture.pointers.size === 0) {
       isHoldingSpace = true;
-      document.documentElement.style.cursor = CURSOR_TYPE.GRABBING;
+      setCursor(this.canvas, CURSOR_TYPE.GRABBING);
     }
   });
 
   private onKeyUp = withBatchedUpdates((event: KeyboardEvent) => {
     if (event.key === KEYS.SPACE) {
       if (this.state.elementType === "selection") {
-        resetCursor();
+        resetCursor(this.canvas);
       } else {
-        setCursorForShape(this.state.elementType);
+        setCursorForShape(this.canvas, this.state.elementType);
         this.setState({
           selectedElementIds: {},
           selectedGroupIds: {},
@@ -1496,7 +1510,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
 
   private selectShapeTool(elementType: AppState["elementType"]) {
     if (!isHoldingSpace) {
-      setCursorForShape(elementType);
+      setCursorForShape(this.canvas, elementType);
     }
     if (isToolIcon(document.activeElement)) {
       document.activeElement.blur();
@@ -1592,7 +1606,10 @@ class App extends React.Component<ExcalidrawProps, AppState> {
           },
           this.state,
         );
-        return [viewportX, viewportY];
+        return [
+          viewportX - this.state.offsetLeft,
+          viewportY - this.state.offsetTop,
+        ];
       },
       onChange: withBatchedUpdates((text) => {
         updateElement(text);
@@ -1622,7 +1639,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
           editingElement: null,
         });
         if (this.state.elementLocked) {
-          setCursorForShape(this.state.elementType);
+          setCursorForShape(this.canvas, this.state.elementType);
         }
       }),
       element,
@@ -1803,7 +1820,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       return;
     }
 
-    resetCursor();
+    resetCursor(this.canvas);
 
     const { x: sceneX, y: sceneY } = viewportCoordsToSceneCoords(
       event,
@@ -1835,7 +1852,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       }
     }
 
-    resetCursor();
+    resetCursor(this.canvas);
 
     if (!event[KEYS.CTRL_OR_CMD]) {
       this.startTextEditing({
@@ -1901,9 +1918,9 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     const isOverScrollBar = isPointerOverScrollBars.isOverEither;
     if (!this.state.draggingElement && !this.state.multiElement) {
       if (isOverScrollBar) {
-        resetCursor();
+        resetCursor(this.canvas);
       } else {
-        setCursorForShape(this.state.elementType);
+        setCursorForShape(this.canvas, this.state.elementType);
       }
     }
 
@@ -1954,7 +1971,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       const { points, lastCommittedPoint } = multiElement;
       const lastPoint = points[points.length - 1];
 
-      setCursorForShape(this.state.elementType);
+      setCursorForShape(this.canvas, this.state.elementType);
 
       if (lastPoint === lastCommittedPoint) {
         // if we haven't yet created a temp point and we're beyond commit-zone
@@ -1971,7 +1988,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
             points: [...points, [scenePointerX - rx, scenePointerY - ry]],
           });
         } else {
-          document.documentElement.style.cursor = CURSOR_TYPE.POINTER;
+          setCursor(this.canvas, CURSOR_TYPE.POINTER);
           // in this branch, we're inside the commit zone, and no uncommitted
           // point exists. Thus do nothing (don't add/remove points).
         }
@@ -1985,13 +2002,13 @@ class App extends React.Component<ExcalidrawProps, AppState> {
           lastCommittedPoint[1],
         ) < LINE_CONFIRM_THRESHOLD
       ) {
-        document.documentElement.style.cursor = CURSOR_TYPE.POINTER;
+        setCursor(this.canvas, CURSOR_TYPE.POINTER);
         mutateElement(multiElement, {
           points: points.slice(0, -1),
         });
       } else {
         if (isPathALoop(points, this.state.zoom.value)) {
-          document.documentElement.style.cursor = CURSOR_TYPE.POINTER;
+          setCursor(this.canvas, CURSOR_TYPE.POINTER);
         }
         // update last uncommitted point
         mutateElement(multiElement, {
@@ -2034,8 +2051,9 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         elementWithTransformHandleType &&
         elementWithTransformHandleType.transformHandleType
       ) {
-        document.documentElement.style.cursor = getCursorForResizingElement(
-          elementWithTransformHandleType,
+        setCursor(
+          this.canvas,
+          getCursorForResizingElement(elementWithTransformHandleType),
         );
         return;
       }
@@ -2048,9 +2066,12 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         event.pointerType,
       );
       if (transformHandleType) {
-        document.documentElement.style.cursor = getCursorForResizingElement({
-          transformHandleType,
-        });
+        setCursor(
+          this.canvas,
+          getCursorForResizingElement({
+            transformHandleType,
+          }),
+        );
         return;
       }
     }
@@ -2060,11 +2081,12 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       scenePointer.y,
     );
     if (this.state.elementType === "text") {
-      document.documentElement.style.cursor = isTextElement(hitElement)
-        ? CURSOR_TYPE.TEXT
-        : CURSOR_TYPE.CROSSHAIR;
+      setCursor(
+        this.canvas,
+        isTextElement(hitElement) ? CURSOR_TYPE.TEXT : CURSOR_TYPE.CROSSHAIR,
+      );
     } else if (isOverScrollBar) {
-      document.documentElement.style.cursor = CURSOR_TYPE.AUTO;
+      setCursor(this.canvas, CURSOR_TYPE.AUTO);
     } else if (
       hitElement ||
       this.isHittingCommonBoundingBoxOfSelectedElements(
@@ -2072,9 +2094,9 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         selectedElements,
       )
     ) {
-      document.documentElement.style.cursor = CURSOR_TYPE.MOVE;
+      setCursor(this.canvas, CURSOR_TYPE.MOVE);
     } else {
-      document.documentElement.style.cursor = CURSOR_TYPE.AUTO;
+      setCursor(this.canvas, CURSOR_TYPE.AUTO);
     }
   };
 
@@ -2247,7 +2269,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
     let nextPastePrevented = false;
     const isLinux = /Linux/.test(window.navigator.platform);
 
-    document.documentElement.style.cursor = CURSOR_TYPE.GRABBING;
+    setCursor(this.canvas, CURSOR_TYPE.GRABBING);
     let { clientX: lastX, clientY: lastY } = event;
     const onPointerMove = withBatchedUpdates((event: PointerEvent) => {
       const deltaX = lastX - event.clientX;
@@ -2299,7 +2321,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         lastPointerUp = null;
         isPanning = false;
         if (!isHoldingSpace) {
-          setCursorForShape(this.state.elementType);
+          setCursorForShape(this.canvas, this.state.elementType);
         }
         this.setState({
           cursorButton: "up",
@@ -2415,7 +2437,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
 
     const onPointerUp = withBatchedUpdates(() => {
       isDraggingScrollBar = false;
-      setCursorForShape(this.state.elementType);
+      setCursorForShape(this.canvas, this.state.elementType);
       lastPointerUp = null;
       this.setState({
         cursorButton: "up",
@@ -2478,9 +2500,12 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         );
       }
       if (pointerDownState.resize.handleType) {
-        document.documentElement.style.cursor = getCursorForResizingElement({
-          transformHandleType: pointerDownState.resize.handleType,
-        });
+        setCursor(
+          this.canvas,
+          getCursorForResizingElement({
+            transformHandleType: pointerDownState.resize.handleType,
+          }),
+        );
         pointerDownState.resize.isResizing = true;
         pointerDownState.resize.offset = tupleToCoors(
           getResizeOffsetXY(
@@ -2645,7 +2670,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       insertAtParentCenter: !event.altKey,
     });
 
-    resetCursor();
+    resetCursor(this.canvas);
     if (!this.state.elementLocked) {
       this.setState({
         elementType: "selection",
@@ -2702,7 +2727,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       mutateElement(multiElement, {
         lastCommittedPoint: multiElement.points[multiElement.points.length - 1],
       });
-      document.documentElement.style.cursor = CURSOR_TYPE.POINTER;
+      setCursor(this.canvas, CURSOR_TYPE.POINTER);
     } else {
       const [gridX, gridY] = getGridPoint(
         pointerDownState.origin.x,
@@ -3237,7 +3262,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
           }
           this.setState({ suggestedBindings: [], startBoundElement: null });
           if (!elementLocked && elementType !== "draw") {
-            resetCursor();
+            resetCursor(this.canvas);
             this.setState((prevState) => ({
               draggingElement: null,
               elementType: "selection",
@@ -3408,7 +3433,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
       }
 
       if (!elementLocked && elementType !== "draw") {
-        resetCursor();
+        resetCursor(this.canvas);
         this.setState({
           draggingElement: null,
           suggestedBindings: [],
@@ -3566,7 +3591,6 @@ class App extends React.Component<ExcalidrawProps, AppState> {
           // This will only work as of Chrome 86,
           // but can be safely ignored on older releases.
           const item = event.dataTransfer.items[0];
-          // TODO: Make this part of `AppState`.
           (file as any).handle = await (item as any).getAsFileSystemHandle();
         } catch (error) {
           console.warn(error.name, error.message);
