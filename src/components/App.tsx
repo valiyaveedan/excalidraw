@@ -183,6 +183,7 @@ import LayerUI from "./LayerUI";
 import { Stats } from "./Stats";
 import { Toast } from "./Toast";
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
+import { exportToCanvas } from "../scene/export";
 
 const { history } = createHistory();
 
@@ -272,6 +273,7 @@ export type ExcalidrawImperativeAPI = {
   };
   setScrollToCenter: InstanceType<typeof App>["setScrollToCenter"];
   getSceneElements: InstanceType<typeof App>["getSceneElements"];
+  getCanvas: InstanceType<typeof App>["getCanvas"];
   getAppState: () => InstanceType<typeof App>["state"];
   readyPromise: ResolvablePromise<ExcalidrawImperativeAPI>;
   ready: true;
@@ -330,6 +332,7 @@ class App extends React.Component<ExcalidrawProps, AppState> {
         setScrollToCenter: this.setScrollToCenter,
         getSceneElements: this.getSceneElements,
         getAppState: () => this.state,
+        getCanvas: this.getCanvas,
       } as const;
       if (typeof excalidrawRef === "function") {
         excalidrawRef(api);
@@ -484,6 +487,24 @@ class App extends React.Component<ExcalidrawProps, AppState> {
 
   public getSceneElementsIncludingDeleted = () => {
     return this.scene.getElementsIncludingDeleted();
+  };
+
+  public getCanvas = () => {
+    const exportBackground = true;
+    const viewBackgroundColor = "#ffffff";
+    const scale = 1;
+    const exportPadding = 10;
+    const shouldAddWatermark = false;
+
+    const canvas = exportToCanvas(this.scene.getElements(), this.state, {
+      exportBackground,
+      exportPadding,
+      viewBackgroundColor,
+      scale,
+      shouldAddWatermark,
+    });
+    return canvas;
+    // return this.canvas;
   };
 
   public getSceneElements = () => {
