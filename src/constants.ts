@@ -58,6 +58,7 @@ export const ENV = {
 
 export const CLASSES = {
   SHAPE_ACTIONS_MENU: "App-menu__left",
+  CANVAS_ACTIONS_MENU: "canvas-menu__left",
 };
 
 // 1-based in case we ever do `if(element.fontFamily)`
