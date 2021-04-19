@@ -10,10 +10,10 @@ import { getDateTime } from "./utils";
 
 export const getDefaultAppState = (): Omit<
   AppState,
-  "offsetTop" | "offsetLeft"
+  "offsetTop" | "offsetLeft" | "width" | "height"
 > => {
   return {
-    appearance: "light",
+    theme: "light",
     collaborators: new Map(),
     currentChartType: "bar",
     currentItemBackgroundColor: "transparent",
@@ -43,7 +43,6 @@ export const getDefaultAppState = (): Omit<
     exportWithDarkMode: false,
     fileHandle: null,
     gridSize: null,
-    height: window.innerHeight,
     isBindingEnabled: true,
     isLibraryOpen: false,
     isLoading: false,
@@ -70,7 +69,6 @@ export const getDefaultAppState = (): Omit<
     suggestedBindings: [],
     toastMessage: null,
     viewBackgroundColor: oc.white,
-    width: window.innerWidth,
     zenModeEnabled: false,
     zoom: { value: 1 as NormalizedZoomValue, translation: { x: 0, y: 0 } },
     viewModeEnabled: false,
@@ -92,7 +90,7 @@ const APP_STATE_STORAGE_CONF = (<
 >(
   config: { [K in keyof T]: K extends keyof AppState ? T[K] : never },
 ) => config)({
-  appearance: { browser: true, export: false },
+  theme: { browser: true, export: false },
   collaborators: { browser: false, export: false },
   currentChartType: { browser: true, export: false },
   currentItemBackgroundColor: { browser: true, export: false },

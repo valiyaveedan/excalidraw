@@ -61,7 +61,7 @@
     "architect": "Architect",
     "artist": "Artist",
     "cartoonist": "Cartoonist",
-    "fileTitle": "File title",
+    "fileTitle": "File name",
     "colorPicker": "Color picker",
     "canvasBackground": "Canvas background",
     "drawingCanvas": "Drawing canvas",
@@ -92,6 +92,8 @@
     "centerHorizontally": "Center horizontally",
     "distributeHorizontally": "Distribute horizontally",
     "distributeVertically": "Distribute vertically",
+    "flipHorizontal": "Flip horizontal",
+    "flipVertical": "Flip vertical",
     "viewMode": "View mode",
     "toggleExportColorScheme": "Toggle export color scheme",
     "share": "Share"
@@ -228,7 +230,8 @@
     "zoomToSelection": "Zoom to selection"
   },
   "encrypted": {
-    "tooltip": "Your drawings are end-to-end encrypted so Excalidraw's servers will never see them."
+    "tooltip": "Your drawings are end-to-end encrypted so Excalidraw's servers will never see them.",
+    "link": "Blog post on end-to-end encryption in Excalidraw"
   },
   "stats": {
     "angle": "Angle",
