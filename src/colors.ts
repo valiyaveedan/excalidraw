@@ -17,6 +17,6 @@ const shades = (index: number) => [
 
 export default {
   canvasBackground: [oc.white, oc.gray[0], oc.black, oc.gray[1], ...shades(0)],
-  elementBackground: ["transparent", oc.black, oc.gray[6], ...shades(6)],
+  elementBackground: ["transparent", oc.black, oc.gray[6], ...shades(3)],
   elementStroke: [oc.black, oc.gray[8], oc.gray[7], ...shades(9)],
 };

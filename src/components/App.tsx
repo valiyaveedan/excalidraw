@@ -846,6 +846,9 @@ class App extends React.Component<AppProps, AppState> {
           (height < MQ_MAX_HEIGHT_LANDSCAPE && width < MQ_MAX_WIDTH_LANDSCAPE);
         // refresh offsets
         // ---------------------------------------------------------------------
+        if ("ontouchstart" in document.documentElement) {
+          this.isMobile = true;
+        }
         this.updateDOMRect();
       });
       this.resizeObserver?.observe(this.excalidrawContainerRef.current);
@@ -856,6 +859,9 @@ class App extends React.Component<AppProps, AppState> {
       const handler = () => (this.isMobile = mediaQuery.matches);
       mediaQuery.addListener(handler);
       this.detachIsMobileMqHandler = () => mediaQuery.removeListener(handler);
+      if ("ontouchstart" in document.documentElement) {
+        this.isMobile = true;
+      }
     }
 
     const searchParams = new URLSearchParams(window.location.search.slice(1));
